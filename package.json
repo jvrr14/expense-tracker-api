@@ -24,6 +24,7 @@
   "homepage": "https://github.com/jvrr14/expense-tracker-api#readme",
   "dependencies": {
     "@hono/node-server": "^2.0.6",
+    "@hono/zod-validator": "^0.8.0",
     "argon2": "^0.44.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",

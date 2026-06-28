@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { AppError } from './shared/errors.js';
+import { authRoutes } from './modules/auth/routes.js';
 
 export function createApp() {
   const app = new Hono();
@@ -10,6 +11,8 @@ export function createApp() {
   app.use(logger());
   app.use(cors());
   app.use(secureHeaders());
+
+  app.route('/auth', authRoutes);
 
   app.get('/health', (c) =>
     c.json({ status: 'ok', timestamp: new Date().toISOString() }),
