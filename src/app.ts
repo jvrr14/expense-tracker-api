@@ -1,12 +1,14 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { AppError } from './shared/errors.js';
+import type { AppEnv } from './shared/auth.js';
 import { authRoutes } from './modules/auth/routes.js';
 
 export function createApp() {
-  const app = new Hono();
+  const app = new Hono<AppEnv>();
 
   app.use(logger());
   app.use(cors());
@@ -24,6 +26,26 @@ export function createApp() {
         { success: false, error: { code: err.code, message: err.message } },
         err.statusCode as Parameters<typeof c.json>[1],
       );
+    }
+
+    if (err instanceof HTTPException) {
+      const response = err.getResponse();
+
+      if (err.status === 401) {
+        return c.json(
+          {
+            success: false,
+            error: { code: 'UNAUTHORIZED', message: 'Unauthorized' },
+          },
+          401,
+          {
+            'WWW-Authenticate':
+              response.headers.get('WWW-Authenticate') ?? 'Bearer',
+          },
+        );
+      }
+
+      return response;
     }
 
     console.error(err);

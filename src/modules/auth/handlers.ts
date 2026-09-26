@@ -1,9 +1,10 @@
-import { REGISTER_SUCCESS_MESSAGE, registerService } from "./services.js";
+import { loginService, REGISTER_SUCCESS_MESSAGE, registerService } from "./services.js";
 import { createFactory } from "hono/factory";
 import { zValidator } from "@hono/zod-validator";
-import { registerSchema } from "./schema.js";
+import { loginSchema, registerSchema } from "./schema.js";
+import type { AppEnv } from "../../shared/auth.js";
 
-const factory = createFactory();
+const factory = createFactory<AppEnv>();
 
 export const registerHandlers = factory.createHandlers(
     zValidator('json', registerSchema),
@@ -14,3 +15,11 @@ export const registerHandlers = factory.createHandlers(
     }
 );
 
+export const loginHandlers = factory.createHandlers(
+    zValidator('json', loginSchema),
+    async (c) => {
+        const { email, password } = c.req.valid('json');
+        const result = await loginService(email, password);
+        return c.json({ success: true, data: result }, 200);
+    }
+);
