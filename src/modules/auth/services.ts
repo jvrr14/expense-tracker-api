@@ -5,7 +5,7 @@ import {
   JWT_ALGORITHM,
   type AccessTokenPayload,
 } from "../../shared/auth.js";
-import { UnauthorizedError } from "../../shared/errors.js";
+import { ConflictError, UnauthorizedError } from "../../shared/errors.js";
 import { createUser, getUserByEmail } from "./repository.js";
 import argon2 from "argon2";
 
@@ -16,24 +16,16 @@ const HASH_OPTIONS: argon2.Options = {
     parallelism: 4,
 };
 
-const isUniqueViolation = (error: unknown): error is { code: string } => {
-    return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505';
-};
-
 export const REGISTER_SUCCESS_MESSAGE =
-    'If this email is not already registered, your account has been created.';
+    'Account created successfully.';
 
 export const registerService = async (name: string, email: string, password: string) => {
     const hashedPassword = await argon2.hash(password, HASH_OPTIONS);
 
-    try {
-        await createUser(name, email, hashedPassword);
-    } catch (error) {
-        if (isUniqueViolation(error)) {
-            return;
-        }
+    const user = await createUser(name, email, hashedPassword);
 
-        throw error;
+    if (!user) {
+        throw new ConflictError('An account with this email already exists');
     }
 };
 

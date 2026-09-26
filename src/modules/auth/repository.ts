@@ -10,6 +10,7 @@ export const getUserByEmail = async (email: string) => {
 export const createUser = async (name: string, email: string, passwordHash: string) => {
     const [user] = await db.insert(users)
         .values({ name, email, passwordHash })
+        .onConflictDoNothing({ target: users.email })
         .returning({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt, updatedAt: users.updatedAt });
 
     return user;
