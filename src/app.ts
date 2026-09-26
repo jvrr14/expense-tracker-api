@@ -6,6 +6,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { AppError } from './shared/errors.js';
 import type { AppEnv } from './shared/auth.js';
 import { authRoutes } from './modules/auth/routes.js';
+import { currentUserRoutes } from './modules/users/routes.js';
 
 export function createApp() {
   const app = new Hono<AppEnv>();
@@ -15,6 +16,7 @@ export function createApp() {
   app.use(secureHeaders());
 
   app.route('/auth', authRoutes);
+  app.route('/me', currentUserRoutes);
 
   app.get('/health', (c) =>
     c.json({ status: 'ok', timestamp: new Date().toISOString() }),
